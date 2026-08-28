@@ -1,0 +1,24 @@
+# Render Blueprint — hosts the Groove DNA engine so the web demo can Generate/Coach
+# with nothing running locally.
+#
+# Deploy: Render → New → Blueprint → connect this repo → it reads this file.
+# Then set the ANTHROPIC_API_KEY env var (marked sync:false = you enter it in the
+# dashboard; it is NEVER committed). Free plan sleeps after ~15 min idle and
+# cold-starts in ~50s.
+#
+# Only the AI endpoints (/compose /coach /edit /variations) are served here — they
+# need just anthropic + numpy + fastapi. Audio /extract (librosa) stays local.
+services:
+  - type: web
+    name: groove-dna-engine
+    runtime: python
+    plan: free
+    rootDir: engine
+    buildCommand: pip install -r requirements-serve.txt
+    startCommand: python -m groovedna.cli serve --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: PYTHONUNBUFFERED
+        value: "1"

@@ -1,0 +1,30 @@
+[project]
+name = "groovedna"
+version = "0.1.0"
+description = "Extract the micro-timing + velocity feel of a real drum performance and transplant it onto programmed MIDI, per voice, tempo-relative, with extrapolation."
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "librosa>=0.10",
+    "pretty_midi>=0.2.10",
+    "soundfile>=0.12",
+    "requests>=2.31",
+]
+
+[project.optional-dependencies]
+viz = ["matplotlib>=3.7"]
+demucs = ["demucs>=4.0"]
+compose = ["anthropic>=0.40"]
+serve = ["fastapi>=0.110", "uvicorn[standard]>=0.29", "python-multipart>=0.0.9", "anthropic>=0.40", "eval_type_backport; python_version < '3.10'"]
+dev = ["pytest>=7.4"]
+
+[project.scripts]
+groovedna = "groovedna.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["groovedna*"]
