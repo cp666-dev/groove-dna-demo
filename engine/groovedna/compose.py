@@ -63,7 +63,15 @@ Rules:
   house, tom-heavy tribal/rock fills, clap-backbeat pop, rim cross-sticks for bossa).
 - Default to 1 bar unless the brief implies a longer phrase; honour a requested bar
   count and keep bars <= 8.
-- Pick a sensible bpm and subdivision if the brief doesn't specify.
+- Pick a subdivision that fits the style (16 for most; 12 for triplet/shuffle feels).
+- TEMPO: choose a bpm that is genuinely typical for the style, and prefer the MIDDLE
+  of its usual range — do NOT reach for the extreme fast end. Reference ranges (pick
+  near the centre unless the brief says "fast"/"slow" or gives a bpm):
+    ballad/soul 65-85 · hip-hop/boom-bap 82-96 · lo-fi 70-85 · reggae/dub 70-90 ·
+    pop 100-118 · funk/disco 108-120 · house/techno 120-128 · rock 108-140 ·
+    metal 140-180 · punk / pop-punk 150-190 (typical ~165, NOT ~198) ·
+    drum'n'bass 168-176 · trap/half-time 130-150 (felt slow). A number the brief
+    states always wins; otherwise err toward comfortable, not breakneck.
 """
 
 
