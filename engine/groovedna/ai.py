@@ -106,10 +106,19 @@ def coach(t: Template, api_key: str | None = None) -> dict:
 _EDIT_SYSTEM = """\
 You edit an existing drum groove per the user's instruction and return the FULL edited
 groove in the given schema. Keep everything the instruction doesn't touch. Slots are
-0-based within a bar (slots_per_bar = beats_per_bar * subdivision). Timing is a percent
-of one slot (negative = ahead, positive = behind); velocity is 0..1. Be musical — if the
-user says "busier hats" add idiomatic hat subdivisions; "push the snare" means make its
-timing more negative; "more Dilla" means loosen and drag with wonky, uneven feel.
+global 0-based across the phrase (slots_per_bar = beats_per_bar * subdivision; a
+multi-bar part runs 0 .. slots_per_bar*bars-1). Timing is a percent of one slot
+(negative = ahead, positive = behind); velocity is 0..1. Be musical — if the user says
+"busier hats" add idiomatic hat subdivisions; "push the snare" means make its timing
+more negative; "more Dilla" means loosen and drag with wonky, uneven feel.
+
+FEEL-ONLY edits: if the instruction asks to apply a named drummer's or style's FEEL
+without rewriting the part (e.g. "play this exact part with Bernard Purdie's feel"),
+KEEP the identical set of hits (same voices + slots) and only reshape their timing,
+velocity, and take-to-take std to embody that drummer. Do not add or remove notes.
+
+Always set `reasoning` to 2-4 plain-English sentences naming the specific traits you
+applied, and `kit` to a suggested sample per voice used.
 """
 
 

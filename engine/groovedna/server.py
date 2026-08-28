@@ -62,6 +62,15 @@ def create_app():
     def health():
         return {"ok": True}
 
+    def _with_ai_notes(g: dict, fp: dict) -> dict:
+        """Attach Claude's plain-English reasoning + suggested drum-sample kit
+        (both live on the raw groove dict, not the flattened fingerprint)."""
+        if g.get("reasoning"):
+            fp["notes"] = g["reasoning"]
+        if g.get("kit"):
+            fp["kit"] = g["kit"]
+        return fp
+
     @app.post("/compose")
     def compose(req: ComposeReq):
         """Generate a drum pattern + feel from a text prompt (Claude) -> fingerprint."""
@@ -71,7 +80,7 @@ def create_app():
             g = generate(req.prompt, bpm=req.bpm, bars=req.bars)
         except RuntimeError as e:
             raise HTTPException(status_code=503, detail=str(e))
-        return to_fingerprint_json(groove_to_template(g))
+        return _with_ai_notes(g, to_fingerprint_json(groove_to_template(g)))
 
     @app.post("/coach")
     def coach_ep(req: GrooveReq):
@@ -96,7 +105,7 @@ def create_app():
             g = edit(from_fingerprint(req.fingerprint), req.instruction)
         except RuntimeError as e:
             raise HTTPException(status_code=503, detail=str(e))
-        return to_fingerprint_json(groove_to_template(g))
+        return _with_ai_notes(g, to_fingerprint_json(groove_to_template(g)))
 
     @app.post("/variations")
     def variations_ep(req: VaryReq):
@@ -108,7 +117,7 @@ def create_app():
             g = variation(from_fingerprint(req.fingerprint), kind=req.kind)
         except RuntimeError as e:
             raise HTTPException(status_code=503, detail=str(e))
-        return to_fingerprint_json(groove_to_template(g))
+        return _with_ai_notes(g, to_fingerprint_json(groove_to_template(g)))
 
     @app.post("/extract")
     async def extract(

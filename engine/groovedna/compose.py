@@ -28,10 +28,18 @@ the human micro-timing/velocity feel that makes it groove.
 
 The grid: a bar has `beats_per_bar` beats, each split into `subdivision` slots, so
 slots_per_bar = beats_per_bar * subdivision (16 for 4/4 sixteenths). Slot 0 is beat 1.
+For a multi-bar phrase, slots run CONTINUOUSLY across the whole phrase: slot index
+ranges 0 .. slots_per_bar*bars - 1 (bar 2 beat 1 is slot slots_per_bar, etc.). Use
+this to write real phrases — vary bars, drop a fill into the last bar, add a crash on
+the downbeat of a new section.
+
+Voices (a full kit — use whatever the style needs, not just the basics):
+  kick, snare, clap, rim (side-stick/cross-stick), tom_hi, tom_mid, tom_lo,
+  hihat (closed), open_hat, ride, crash, perc (tambourine/cowbell/shaker/aux).
 
 For every hit you place, give:
-- voice: one of kick, snare, tom, hihat, cymbal
-- slot: integer 0..slots_per_bar-1
+- voice: one of the voices above (exact string)
+- slot: integer 0..slots_per_bar*bars-1
 - velocity: 0..1 (1 = hardest). Use dynamics — accents, ghost notes (~0.15-0.3).
 - timing: micro-timing as a PERCENT of one slot. NEGATIVE = ahead/rushing (on top of
   the beat), POSITIVE = behind/dragging (laid back). Range about -25..25. This is the
@@ -40,10 +48,21 @@ For every hit you place, give:
 - timing_std / velocity_std: how much this hit varies take-to-take (human looseness).
   Tight machine-like parts ~0-2 timing_std; loose human parts 3-8.
 
+Also return:
+- reasoning: 2-4 sentences, plain English, naming the specific traits of the requested
+  drummer/style you implemented (e.g. "Purdie's ghost-note triplet snare, hats pushed
+  ~4% ahead, backbeat dragged +8%"). This is shown to the user as the 'why'.
+- kit: a suggested drum-sample palette — one entry per voice you actually used, each a
+  short concrete sample description the user could load (e.g. voice "kick",
+  sample "deep round 70s soul kick, felt beater, minimal click").
+
 Rules:
 - Make it genuinely idiomatic for the requested style; don't just fill the grid.
 - Encode the *relationships* that define the feel (hat vs kick, backbeat placement).
-- Default to 1 bar unless the brief implies a longer phrase; keep bars <= 4.
+- Reach for the fuller kit when the genre calls for it (ride-driven jazz, open-hat
+  house, tom-heavy tribal/rock fills, clap-backbeat pop, rim cross-sticks for bossa).
+- Default to 1 bar unless the brief implies a longer phrase; honour a requested bar
+  count and keep bars <= 8.
 - Pick a sensible bpm and subdivision if the brief doesn't specify.
 """
 
@@ -59,6 +78,19 @@ def _schema() -> dict:
             "beats_per_bar": {"type": "integer"},
             "subdivision": {"type": "integer"},
             "bars": {"type": "integer"},
+            "reasoning": {"type": "string"},
+            "kit": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "properties": {
+                        "voice": {"type": "string", "enum": voices},
+                        "sample": {"type": "string"},
+                    },
+                    "required": ["voice", "sample"],
+                },
+            },
             "hits": {
                 "type": "array",
                 "items": {
@@ -77,7 +109,8 @@ def _schema() -> dict:
                 },
             },
         },
-        "required": ["name", "bpm", "beats_per_bar", "subdivision", "bars", "hits"],
+        "required": ["name", "bpm", "beats_per_bar", "subdivision", "bars",
+                     "reasoning", "kit", "hits"],
     }
 
 
@@ -86,16 +119,23 @@ def _clamp01(x: float) -> float:
 
 
 def groove_to_template(g: dict) -> Template:
-    """Turn a generated-groove dict into a .groovedna Template (observed cells)."""
+    """Turn a generated-groove dict into a .groovedna Template (observed cells).
+
+    Slots are kept GLOBAL (0 .. slots_per_bar*bars - 1) so multi-bar phrases keep
+    their per-bar variation and fills instead of being folded onto one bar.
+    """
+    from .voices import canonical_voice
     grid = Grid(bpm=float(g["bpm"]),
                 beats_per_bar=int(g.get("beats_per_bar", 4)),
                 subdivision=int(g.get("subdivision", 4)))
+    bars = max(1, int(g.get("bars", 1)))
+    total = grid.slots_per_bar * bars
     voices: dict[str, dict[int, Cell]] = {v: {} for v in VOICES}
     for h in g["hits"]:
-        v = h["voice"]
+        v = canonical_voice(h["voice"])
         if v not in voices:
             continue
-        slot = int(h["slot"]) % grid.slots_per_bar
+        slot = int(h["slot"]) % total
         voices[v][slot] = Cell(
             timing={"mean": round(float(h["timing"]), 3),
                     "std": round(max(0.0, float(h.get("timing_std", 0))), 3)},

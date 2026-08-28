@@ -21,13 +21,14 @@ def from_fingerprint(d: dict) -> Template:
     """
     from .grid import Grid
     from .template import Cell
+    from .voices import canonical_voice
 
     grid = Grid(bpm=float(d.get("bpm", 120)),
                 beats_per_bar=int(d.get("beatsPerBar", 4)),
                 subdivision=int(d.get("subdivision", 4)))
     voices: dict[str, dict[int, Cell]] = {}
     for vd in d.get("voices", []):
-        slots: dict[int, Cell] = {}
+        slots: dict[int, Cell] = voices.setdefault(canonical_voice(vd["voice"]), {})
         for c in vd.get("cells", []):
             slots[int(c["slot"])] = Cell(
                 timing={"mean": float(c.get("timing", 0)),
@@ -35,18 +36,22 @@ def from_fingerprint(d: dict) -> Template:
                 velocity={"mean": float(c.get("velocity", 0.8)), "std": 0.0},
                 hits=int(c.get("hits", 0)),
                 observed=bool(c.get("observed", True)))
-        voices[vd["voice"]] = slots
     return Template(grid=grid, voices=voices,
                     name=d.get("name", "groove"), bars=int(d.get("bars", 1)))
 
 
 def to_fingerprint_json(t: Template) -> dict:
-    """Flatten a template into a render-friendly payload for the frontend."""
+    """Flatten a template into a render-friendly payload for the frontend.
+
+    `slotsPerBar` is per bar; slots run globally 0 .. slotsPerBar*bars-1 so the app
+    can lay out the whole phrase with bar dividers.
+    """
     n = t.grid.slots_per_bar
+    bars = max(1, int(t.bars))
     voices = []
     for v in VOICES:
         cells = []
-        for slot in range(n):
+        for slot in range(n * bars):
             c = t.lookup(v, slot)
             if c is None:
                 continue
@@ -60,7 +65,7 @@ def to_fingerprint_json(t: Template) -> dict:
             })
         voices.append({"voice": v, "cells": cells})
     return {
-        "name": t.name, "bpm": t.grid.bpm, "slotsPerBar": n,
+        "name": t.name, "bpm": t.grid.bpm, "slotsPerBar": n, "bars": bars,
         "beatsPerBar": t.grid.beats_per_bar, "subdivision": t.grid.subdivision,
         "voices": voices,
     }
