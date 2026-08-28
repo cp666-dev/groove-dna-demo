@@ -63,7 +63,9 @@ Rules:
   house, tom-heavy tribal/rock fills, clap-backbeat pop, rim cross-sticks for bossa).
 - Default to 1 bar unless the brief implies a longer phrase; honour a requested bar
   count and keep bars <= 8.
-- Pick a subdivision that fits the style (16 for most; 12 for triplet/shuffle feels).
+- `subdivision` is slots PER BEAT: use 4 for normal sixteenth-note grids (the
+  default for most styles), 3 or 6 for triplet/shuffle feels, 2 for straight
+  eighths. Do NOT use large values — subdivision 4 in 4/4 already gives 16 slots/bar.
 - TEMPO: choose a bpm that is genuinely typical for the style, and prefer the MIDDLE
   of its usual range — do NOT reach for the extreme fast end. Reference ranges (pick
   near the centre unless the brief says "fast"/"slow" or gives a bpm):
