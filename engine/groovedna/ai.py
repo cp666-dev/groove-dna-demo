@@ -96,7 +96,8 @@ def coach(t: Template, api_key: str | None = None) -> dict:
     resp = client.messages.create(
         model=MODEL, max_tokens=8000, thinking={"type": "adaptive"},
         system=_COACH_SYSTEM,
-        output_config={"format": {"type": "json_schema", "schema": _COACH_SCHEMA}},
+        output_config={"effort": "medium",
+                       "format": {"type": "json_schema", "schema": _COACH_SCHEMA}},
         messages=[{"role": "user", "content": json.dumps(_summary(t))}],
     )
     return json.loads(_text(resp))
@@ -129,7 +130,8 @@ def edit(t: Template, instruction: str, api_key: str | None = None) -> dict:
     resp = client.messages.create(
         model=MODEL, max_tokens=8000, thinking={"type": "adaptive"},
         system=_EDIT_SYSTEM,
-        output_config={"format": {"type": "json_schema", "schema": _schema()}},
+        output_config={"effort": "medium",
+                       "format": {"type": "json_schema", "schema": _schema()}},
         messages=[{"role": "user", "content": user}],
     )
     return json.loads(_text(resp))
@@ -151,7 +153,8 @@ def variation(t: Template, kind: str = "variation", api_key: str | None = None) 
     resp = client.messages.create(
         model=MODEL, max_tokens=8000, thinking={"type": "adaptive"},
         system=_VAR_SYSTEM,
-        output_config={"format": {"type": "json_schema", "schema": _schema()}},
+        output_config={"effort": "medium",
+                       "format": {"type": "json_schema", "schema": _schema()}},
         messages=[{"role": "user", "content": user}],
     )
     return json.loads(_text(resp))

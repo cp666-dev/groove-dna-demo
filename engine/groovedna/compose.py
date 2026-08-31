@@ -202,8 +202,11 @@ def generate(prompt: str, bpm: float | None = None, bars: int | None = None,
         model=model,
         max_tokens=8000,
         thinking={"type": "adaptive"},
+        # "medium" effort keeps musical quality on this well-specified structured
+        # task while cutting the adaptive-thinking token spend (the main output cost).
+        output_config={"effort": "medium",
+                       "format": {"type": "json_schema", "schema": _schema()}},
         system=_SYSTEM,
-        output_config={"format": {"type": "json_schema", "schema": _schema()}},
         messages=[{"role": "user", "content": brief}],
     )
     import json
