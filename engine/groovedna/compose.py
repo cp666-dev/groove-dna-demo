@@ -200,7 +200,9 @@ def generate(prompt: str, bpm: float | None = None, bars: int | None = None,
 
     resp = client.messages.create(
         model=model,
-        max_tokens=8000,
+        # Dense multi-bar grooves (busy 8-bar fills) need headroom or the JSON
+        # truncates at max_tokens and won't parse.
+        max_tokens=16000,
         thinking={"type": "adaptive"},
         # "medium" effort keeps musical quality on this well-specified structured
         # task while cutting the adaptive-thinking token spend (the main output cost).
@@ -211,4 +213,11 @@ def generate(prompt: str, bpm: float | None = None, bars: int | None = None,
     )
     import json
     text = next(b.text for b in resp.content if b.type == "text")
-    return json.loads(text)
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError as e:
+        # Ran out of output budget mid-JSON — surface a clear, retryable error
+        # (503) instead of an opaque 500.
+        raise RuntimeError(
+            "The groove was too dense to finish in one response — try fewer bars "
+            "or a simpler brief.") from e

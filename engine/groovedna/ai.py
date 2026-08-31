@@ -94,7 +94,7 @@ _COACH_SCHEMA = {
 def coach(t: Template, api_key: str | None = None) -> dict:
     client = _client(api_key)
     resp = client.messages.create(
-        model=MODEL, max_tokens=8000, thinking={"type": "adaptive"},
+        model=MODEL, max_tokens=16000, thinking={"type": "adaptive"},
         system=_COACH_SYSTEM,
         output_config={"effort": "medium",
                        "format": {"type": "json_schema", "schema": _COACH_SCHEMA}},
@@ -128,7 +128,7 @@ def edit(t: Template, instruction: str, api_key: str | None = None) -> dict:
     user = (f"Current groove:\n{json.dumps(_summary(t))}\n\n"
             f"Instruction: {instruction.strip()}")
     resp = client.messages.create(
-        model=MODEL, max_tokens=8000, thinking={"type": "adaptive"},
+        model=MODEL, max_tokens=16000, thinking={"type": "adaptive"},
         system=_EDIT_SYSTEM,
         output_config={"effort": "medium",
                        "format": {"type": "json_schema", "schema": _schema()}},
@@ -151,7 +151,7 @@ def variation(t: Template, kind: str = "variation", api_key: str | None = None) 
     user = (f"Base groove:\n{json.dumps(_summary(t))}\n\n"
             f"Create a {kind} that fits the same style and feel.")
     resp = client.messages.create(
-        model=MODEL, max_tokens=8000, thinking={"type": "adaptive"},
+        model=MODEL, max_tokens=16000, thinking={"type": "adaptive"},
         system=_VAR_SYSTEM,
         output_config={"effort": "medium",
                        "format": {"type": "json_schema", "schema": _schema()}},
