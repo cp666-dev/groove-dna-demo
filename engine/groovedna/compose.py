@@ -62,7 +62,9 @@ Rules:
 - Reach for the fuller kit when the genre calls for it (ride-driven jazz, open-hat
   house, tom-heavy tribal/rock fills, clap-backbeat pop, rim cross-sticks for bossa).
 - Default to 1 bar unless the brief implies a longer phrase; honour a requested bar
-  count and keep bars <= 8.
+  count up to 32. For long phrases (16-32 bars) write a real arrangement — repeat the
+  core groove with tasteful variation and drop fills at phrase ends — but stay economical
+  with hits so the JSON fits the response budget; do NOT place a dense fill in every bar.
 - `subdivision` is slots PER BEAT: use 4 for normal sixteenth-note grids (the
   default for most styles), 3 or 6 for triplet/shuffle feels, 2 for straight
   eighths. Do NOT use large values — subdivision 4 in 4/4 already gives 16 slots/bar.
